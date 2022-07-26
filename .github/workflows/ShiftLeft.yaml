@@ -1,24 +1,31 @@
 ---
 name: Shiftleft Scan
-"on":
-- workflow_dispatch
-- pull_request
+on:
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: Log level
 jobs:
   scanning:
     env:
       APP_ID: 3bf0ce1177370ebf0a63d695c3d64a0a6f25f711479b79f29e8875e1c8f55410
       BRANCH_NAME: main
-      SCAN_ID: c8702ef5b50c0d6d35acfaa6508f21a029e6e7576b3e7e9789fdb74028d3dbd6
-      REQ_URL_MAP: "${{toJSON('{\"SL_API_HOST\":\"https://slapi.dev.securin.io\",\"\
-        SL_RESULT_API_HOST\":\"https://slresultapi.dev.securin.io\",\"SL_RESULTPARSER_API_HOST\"\
-        :\"https://slresultparserapi.dev.securin.io\"}')}}"
+      SCAN_ID: 37f8939c78bf03d548a9f44e45cec730af281a5b1c68f0499a478be7fe9f1544
+      REQ_URL_MAP: "${{toJSON('{\"SL_RESULT_API_HOST\":\"https://4215-157-51-182-114.ngrok.io/resultapi\"\
+        ,\"SL_RESULTPARSER_API_HOST\":\"https://25d8-157-51-182-114.ngrok.io/resultparserapi\"\
+        }')}}"
     steps:
     - name: Retrieve Token Info
       id: auth_token
-      run: "respJson=$(curl --location --request GET 'https://slresultapi.dev.securin.io/aws/ecr/token'\
+      run: "respJson=$(curl --location --request GET 'https://4215-157-51-182-114.ngrok.io/resultapi/aws/ecr/token'\
         \  --header 'Authorization: Bearer ${{secrets.CLI_ACCESS_TOKEN}}'  --data-raw\
         \ ' ' )\necho \"::set-output name=authTokenJson::$respJson\""
     - uses: actions/checkout@v2
+    - name: Build with Maven
+      run: mvn -q --batch-mode --update-snapshots verify
     - name: Scan Initiated
       id: sec_scan_init
       run: "usrVal=$(echo '${{fromJson(steps.auth_token.outputs.authTokenJson).user}}'\
