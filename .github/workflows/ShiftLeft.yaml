@@ -1,24 +1,31 @@
 ---
 name: Shiftleft Scan
-"on":
-- workflow_dispatch
-- pull_request
+on:
+  pull_request:
+    branches:
+    - sample-branch-5
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: Log level
 jobs:
   scanning:
     env:
-      APP_ID: cd4d4180b1c39c24457cf7eb14541c646ca826c984bbf59c609313a949f55618
-      BRANCH_NAME: main
-      SCAN_ID: 4b45b04171cf18f5a1313aad6442c7cb5ad23bc8469a5d68260cb0d0815dd6c7
-      REQ_URL_MAP: "${{toJSON('{\"SL_RESULT_API_HOST\":\"http://6153-183-82-204-132.ngrok.io/resultapi\"\
-        ,\"SL_RESULTPARSER_API_HOST\":\"http://7474-183-82-204-132.ngrok.io/resultparserapi\"\
+      APP_ID: 3bf0ce1177370ebf0a63d695c3d64a0a6f25f711479b79f29e8875e1c8f55410
+      BRANCH_NAME: sample-branch-5
+      SCAN_ID: 566832edf6803410b341206f36980667b05859017355b5988911b45dbef06af4
+      REQ_URL_MAP: "${{toJSON('{\"SL_RESULT_API_HOST\":\"https://4215-157-51-182-114.ngrok.io/resultapi\"\
+        ,\"SL_RESULTPARSER_API_HOST\":\"https://25d8-157-51-182-114.ngrok.io/resultparserapi\"\
         }')}}"
     steps:
     - name: Retrieve Token Info
       id: auth_token
-      run: "respJson=$(curl --location --request GET 'http://6153-183-82-204-132.ngrok.io/resultapi/aws/ecr/token'\
+      run: "respJson=$(curl --location --request GET 'https://4215-157-51-182-114.ngrok.io/resultapi/aws/ecr/token'\
         \  --header 'Authorization: Bearer ${{secrets.CLI_ACCESS_TOKEN}}'  --data-raw\
         \ ' ' )\necho \"::set-output name=authTokenJson::$respJson\""
     - uses: actions/checkout@v2
+    - name: Build with Maven
+      run: mvn -q --batch-mode --update-snapshots verify
     - name: Scan Initiated
       id: sec_scan_init
       run: "usrVal=$(echo '${{fromJson(steps.auth_token.outputs.authTokenJson).user}}'\
