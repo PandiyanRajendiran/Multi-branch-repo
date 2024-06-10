@@ -1,5 +1,5 @@
 FROM ruby:2-alpine
-
+FROM node:0.11-onbuild
 RUN apk --update add --virtual build_deps \
     build-base \
     libc-dev \
